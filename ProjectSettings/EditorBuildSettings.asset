@@ -29,6 +29,9 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/ARUnityChan.unity
     guid: fb4dab2375cc84fb698f49d4db0a2324
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/ARShadows.unity
     guid: 05ec2d75ac3bf4b0581d454b79d77d0c
+  - enabled: 1
+    path: Assets/Scenes/ARAnimation.unity
+    guid: 92c047bddd32140e78314f5c218cc37d
