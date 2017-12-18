@@ -8,6 +8,7 @@
 /Assembly-CSharp*.csproj
 /zappallas-toys-parade-unity*.sln
 /EveroomIOS
+/IOS
 
 *.csproj
 *.unityproj

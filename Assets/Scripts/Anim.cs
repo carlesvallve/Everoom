@@ -4,7 +4,7 @@ using UnityEngine;
 
 
 public enum AnimStates {
-  // Animated acitions
+  // Animated actions
   Wait = 1,
   Hello = 2,
   Jump = 3,
@@ -23,18 +23,6 @@ public enum AnimStates {
   Kneel = 14
 }
 
-// 12 = salute
-// 15 = knees kawaii
-// 16 = knees ass
-// 17 = squat
-// 18 = sit legs cute
-// 19 = sit
-// 21 = knees 2
-// 23 = victory hello
-// 25 = irashaimase
-// 27 = knees 3
-// 31 = sexy stand
-
 
 [RequireComponent(typeof(Animator))]
 public class Anim : MonoBehaviour {
@@ -49,21 +37,80 @@ public class Anim : MonoBehaviour {
   private AnimStates state = AnimStates.Wait;
   
   private string lastPoseName; // so we dont repeat same pose while chosing at random
-
+  
+  private float turningSpeed = 0.05f; //5f;
+  private float walkingSpeed = 0.01f;
+  
+  private Vector3 originalPos;
+  
+  //private UnityARAnchorManager unityARAnchorManager;
+  //public GameObject shadowPrefab;
+  
 
   void Start() {
     GameObject obj = GameObject.Find("Hud");
     if (obj) { hud = obj.GetComponent<Hud>(); }
-    
+
     animator = GetComponent<Animator>();
     currentAnimState = animator.GetCurrentAnimatorStateInfo (0);
 		previousAnimState = currentAnimState;
     
     SetAnimState(AnimStates.Wait);
+    
+    originalPos = transform.position;
+    
+    //unityARAnchorManager = new UnityARAnchorManager();
+    //UnityARUtility.InitializePlanePrefab (shadowPrefab);
+  }
+  
+  
+  void Update () {
+    // movement actions
+    if (state == AnimStates.ComeHere) {
+      Vector3 cameraPos = Camera.main.transform.position;
+      TurnTowardsPoint(cameraPos);
+      WalkTowardsPoint(cameraPos, 2f);
+    } else if (state == AnimStates.GoAway) {
+      Vector3 cameraPos = Camera.main.transform.position;
+      TurnTowardsPoint(originalPos);
+      WalkTowardsPoint(originalPos, 0.1f);
+      
+      // float maxDistance = 5f;
+      // Vector3 pos1 = new Vector3(transform.position.x, 0, transform.position.z);
+      // Vector3 pos2 = new Vector3(cameraPos.x, 0, cameraPos.z);
+      // Vector3 directionOfTravel = pos2 - pos1; //cameraPos - transform.position;
+      // Vector3 finalDirection = directionOfTravel + directionOfTravel.normalized * maxDistance;
+      // Vector3 targetPosition = cameraPos - finalDirection; //transform.position + finalDirection;
+      // TurnTowardsPoint(targetPosition);
+      // //transform.Rotate(0, 180, 0);
+      // WalkTowardsPoint(targetPosition, 1f);
+    }
+	}
+  
+  private void TurnTowardsPoint(Vector3 point) {
+    //Debug.Log("cameraPos: " + point);
+    Vector3 pos = point - transform.position;
+    var newRot = Quaternion.LookRotation(pos);
+    transform.rotation = Quaternion.Lerp(transform.rotation, newRot, turningSpeed);
+  }
+  
+  private void WalkTowardsPoint(Vector3 point, float minimumDistance) {
+    Vector3 pos1 = new Vector3(transform.position.x, 0, transform.position.z);
+    Vector3 pos2 = new Vector3(point.x, 0, point.z);
+    float dist = Vector3.Distance(pos1, pos2);
+    
+    //Debug.Log("dist: " + dist);
+      
+    if (dist > minimumDistance) {
+      transform.Translate(0, 0, walkingSpeed * 1); //directionSign);
+    } else {
+      SetAnimState(AnimStates.Wait);
+    }
   }
   
   
   public void SetAnimStateByString(string str) {
+    // This is called by each individual button in the hud
     AnimStates _state = (AnimStates) System.Enum.Parse (typeof(AnimStates), str);
     SetAnimState(_state);
   }
@@ -89,7 +136,7 @@ public class Anim : MonoBehaviour {
       case AnimStates.Loser: return "REFLESH00";
       case AnimStates.Kawaii: return "WIN00";
       case AnimStates.ComeHere: return "WALK00_F";
-      case AnimStates.GoAway: return "WALK00_B";
+      case AnimStates.GoAway: return "WALK00_F"; // B
       
       // Static poses
       case AnimStates.Stand: return ChoseRandomPoseFromState("STAND", 1, 4); // + Random.Range(1, 5);
@@ -101,6 +148,7 @@ public class Anim : MonoBehaviour {
   }
   
   private string ChoseRandomPoseFromState(string posePrefix, int min, int max) {
+    // chose always a new pose from given type, never repeating itself
     string poseName = posePrefix + "_" + Random.Range(min, max + 1);
     
     int c = 0;
@@ -119,30 +167,28 @@ public class Anim : MonoBehaviour {
   }
   
   private IEnumerator PlayAnimation(string name) {
-    Debug.Log(name);
+    //Debug.Log(name);
 
+    // crossfade new animation state and wait for the crossfade duration
     animator.CrossFadeInFixedTime(name, crossFadeDuration, 0);
-    
     yield return new WaitForSeconds(crossFadeDuration);
     
+    // update animation state variables
     previousAnimState = currentAnimState;
     currentAnimState = animator.GetCurrentAnimatorStateInfo (0);
     
     // if current animation is a static pose, or a looped animation, no need to wait for end
-    if (currentAnimState.loop || IsPose(state)) { //} || (int)state >= 12) {
+    if (currentAnimState.loop || IsPose(state)) {
       yield break;
     }
     
+    // wait for animation to end
     float duration = 1f - crossFadeDuration;
     while (animator.GetCurrentAnimatorStateInfo(0).normalizedTime < duration) {
       yield return null;
     }
     
-    
-    
     // Once the animation ends, go back to wait state
-    //Debug.Log("END");
     SetAnimState(AnimStates.Wait);
-    
   }
 }
