@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace UnityEngine.XR.iOS
 {
-	public class UnityARAnchorManager 
+	public class UnityARAnchorManager
 	{
 
 
@@ -65,4 +65,3 @@ namespace UnityEngine.XR.iOS
 		}
 	}
 }
-
