@@ -6,6 +6,7 @@ Shader "UnityChan/Hair"
 		_ShadowColor ("Shadow Color", Color) = (0.8, 0.8, 1, 1)
 		_SpecularPower ("Specular Power", Float) = 20
 		_EdgeThickness ("Outline Thickness", Float) = 1
+		_DepthBias  ("Outline Depth Bias", Float) = 0.00012
 				
 		_MainTex ("Diffuse", 2D) = "white" {}
 		_FalloffSampler ("Falloff Control", 2D) = "white" {}
@@ -30,11 +31,13 @@ Shader "UnityChan/Hair"
 			ZTest LEqual
 CGPROGRAM
 #pragma multi_compile_fwdbase
+#pragma target 3.0
 #pragma vertex vert
 #pragma fragment frag
 #include "UnityCG.cginc"
 #include "AutoLight.cginc"
-#include "CharaMain.cg"
+#define ENABLE_NORMAL_MAP
+#include "CharaMain.cginc"
 ENDCG
 		}
 
@@ -43,10 +46,11 @@ ENDCG
 			Cull Front
 			ZTest Less
 CGPROGRAM
+#pragma target 3.0
 #pragma vertex vert
 #pragma fragment frag
 #include "UnityCG.cginc"
-#include "CharaOutline.cg"
+#include "CharaOutline.cginc"
 ENDCG
 		}
 
